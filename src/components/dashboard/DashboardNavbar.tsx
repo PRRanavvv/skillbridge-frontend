@@ -13,20 +13,26 @@ const DashboardNavbar = ({ toggleSidebar, sidebarOpen }: DashboardNavbarProps) =
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const darkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDark(darkMode);
-    document.documentElement.classList.toggle('dark', darkMode);
+    // Sync with global theme state
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const shouldUseDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    setIsDark(shouldUseDark);
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !isDark;
     setIsDark(newMode);
-    localStorage.setItem('darkMode', newMode.toString());
+    localStorage.setItem('theme', newMode ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', newMode);
+    
+    // TODO: Backend Integration Point
+    // Save theme preference to user profile
+    // await updateUserPreferences({ theme: newMode ? 'dark' : 'light' });
   };
 
   return (
-    <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm">
+    <header className="h-16 border-b border-border bg-card/50 dark:bg-card/50 backdrop-blur-sm">
       <div className="flex items-center justify-between h-full px-6">
         <div className="flex items-center space-x-4">
           <Button
@@ -49,9 +55,13 @@ const DashboardNavbar = ({ toggleSidebar, sidebarOpen }: DashboardNavbarProps) =
             variant="ghost"
             size="icon"
             onClick={toggleDarkMode}
-            className="rounded-full"
+            className="rounded-full transition-all duration-300 hover:scale-110"
           >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? (
+              <Sun className="h-4 w-4 transition-transform duration-300" />
+            ) : (
+              <Moon className="h-4 w-4 transition-transform duration-300" />
+            )}
           </Button>
           
           <Button variant="ghost" size="icon" className="rounded-full">
